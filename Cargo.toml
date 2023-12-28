@@ -1,0 +1,49 @@
+[package]
+name = "candle-wrapper"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+#TODO remove unused
+
+#accelerate-src = { workspace = true } #for mac
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+#byteorder = { workspace = true }
+#bytes = { workspace = true }
+#candle-core = { workspace = true}
+candle-core = { workspace = true, features = ["cuda", "cudnn"] }
+candle-datasets = { workspace = true }
+candle-nn = { workspace = true, features = ["cuda"] }
+candle-transformers = { workspace = true, features = [
+    "cuda",
+    "flash-attn",
+] } # "accelerate" for mac
+candle-flash-attn = { workspace = true }
+clap = { workspace = true }
+#cudarc = { workspace = true }
+dotenvy = { workspace = true }
+envy = { workspace = true }
+# gemm = { workspace = true }
+hf-hub = { workspace = true }
+#half = { workspace = true, features = [
+#    "num-traits",
+#    "use-intrinsics",
+#    "rand_distr",
+#], optional = true }
+#image = { workspace = true, features = ["jpeg", "png"] }
+#intel-mkl-src = { workspace = true, features = [
+#    "mkl-static-lp64-iomp",
+#], optional = true }
+#libc = { workspace = true }
+#log = { workspace = true }
+#memmap2 = { workspace = true }
+#num_cpus = { workspace = true }
+#num-traits = { workspace = true }
+once_cell = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokenizers = { workspace = true }
+#tokio = { workspace = true }
+tracing = { workspace = true }
