@@ -1,5 +1,7 @@
 use candle_transformers::models::falcon;
 use candle_transformers::models::llama;
+use candle_transformers::models::llama::Llama3RopeConfig;
+use candle_transformers::models::llama::LlamaEosToks;
 use candle_transformers::models::mistral;
 use candle_transformers::models::stable_lm;
 use serde::Deserialize;
@@ -51,6 +53,9 @@ pub struct LLMConfig {
     pub sliding_window: Option<usize>, // mistral
 
     pub use_flash_attn: Option<bool>, // for candle (not include in config.json)
+
+    pub rope_scaling: Option<Llama3RopeConfig>,
+    pub tie_word_embeddings: Option<bool>,
 }
 
 fn default_rope() -> f32 {
@@ -126,6 +131,11 @@ impl From<LLMConfig> for llama::Config {
             rms_norm_eps: config.rms_norm_eps.unwrap_or(default.rms_norm_eps),
             rope_theta: config.rope_theta,
             use_flash_attn: config.use_flash_attn.unwrap_or(true),
+            bos_token_id: Some(config.bos_token_id),
+            eos_token_id: Some(LlamaEosToks::Single(config.eos_token_id)),
+            rope_scaling: config.rope_scaling,
+            max_position_embeddings: config.max_position_embeddings.unwrap_or_default(),
+            tie_word_embeddings: config.tie_word_embeddings.unwrap_or_default(),
         }
     }
 }

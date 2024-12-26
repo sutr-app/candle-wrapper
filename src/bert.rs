@@ -14,11 +14,20 @@ impl BertWrapper {
         &mut self,
         input_ids: &Tensor,
         token_type_ids: Option<&Tensor>,
+        attention_mask: Option<&Tensor>,
         _seqlen_offset: usize,
     ) -> Result<Tensor> {
         match (self, token_type_ids) {
-            (Self::Bert(m), Some(ttids)) => m.forward(input_ids, ttids).map_err(|e| e.into()),
-            (Self::Bert(_m), None) => Err(anyhow!("token type ids is necessary for bert model",)),
+            (Self::Bert(m), Some(ttids)) => {
+                m.forward(input_ids, ttids, attention_mask).map_err(|e| {
+                    tracing::error!("error in bert forward: {:?}", e);
+                    e.into()
+                })
+            }
+            (Self::Bert(_m), None) => {
+                tracing::warn!("token type ids is necessary for bert model");
+                Err(anyhow!("token type ids is necessary for bert model"))
+            }
         }
     }
 }

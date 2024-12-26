@@ -1,10 +1,12 @@
 use crate::bert::BertWrapper;
 use crate::llm::config::LLMConfigWrapper;
 use crate::llm::LLMModelWrapper;
+use crate::t5::T5Wrapper;
 use crate::whisper::WhisperWrapper;
 use anyhow::{anyhow, Result};
 use candle_core::Device;
 use candle_transformers::models::bert;
+use candle_transformers::models::t5;
 use candle_transformers::models::whisper;
 use serde::Deserialize;
 use serde::Serialize;
@@ -37,6 +39,8 @@ pub enum ConfigWrapper {
     Bert(bert::Config),
     Whisper(whisper::Config),
     LLM(LLMConfigWrapper),
+    T5Encoder(t5::Config),
+    T5Conditional(t5::Config),
 }
 
 impl From<ConfigWrapper> for bert::Config {
@@ -64,11 +68,22 @@ impl From<ConfigWrapper> for LLMConfigWrapper {
     }
 }
 
+impl From<ConfigWrapper> for t5::Config {
+    fn from(c: ConfigWrapper) -> Self {
+        match c {
+            ConfigWrapper::T5Conditional(c) => c,
+            ConfigWrapper::T5Encoder(c) => c,
+            _ => panic!("not t5 config:{:?}", c),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum ModelWrapper {
     Bert(BertWrapper),
     Whisper(WhisperWrapper),
     LLM(LLMModelWrapper),
+    T5(T5Wrapper),
 }
 
 // TODO change file types (pth, safetensor, onnx): only safetensor
@@ -158,4 +173,48 @@ pub struct Models {
     pub model: ModelWrapper,
     pub tokenizer: Tokenizer,
     pub device: Device,
+}
+
+// args for inference by decoder
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct InferenceArgs {
+    /// The initial prompt.
+    pub prompt: String,
+
+    /// The length of the sample to generate (in tokens).
+    pub sample_len: usize,
+
+    /// The temperature used to generate samples.
+    pub temperature: Option<f64>,
+
+    /// Nucleus sampling probability cutoff.
+    pub top_p: Option<f64>,
+
+    /// Penalty to be applied for repeating tokens, 1. means no penalty.
+    pub repeat_penalty: f32,
+
+    /// The context size to consider for the repeat penalty.
+    pub repeat_last_n: usize,
+
+    /// The seed to use when generating random samples.
+    pub seed: u64,
+
+    /// false for plugin runner, true for cli
+    #[serde(default)]
+    pub use_print: bool,
+}
+
+impl Default for InferenceArgs {
+    fn default() -> Self {
+        Self {
+            prompt: "".to_string(),
+            sample_len: 100,
+            temperature: None,
+            top_p: None,
+            repeat_penalty: 1.,
+            repeat_last_n: 1,
+            seed: 42,
+            use_print: false,
+        }
+    }
 }

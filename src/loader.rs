@@ -12,8 +12,10 @@ pub trait HFModelLoader {
     // GPU or CPU (GPU is only available for cuda id:0 device)
     fn device(cpu: bool) -> Result<Device> {
         if cpu {
+            tracing::debug!("cpu is available");
             Ok(Device::Cpu)
         } else if cuda_is_available() {
+            tracing::debug!("cuda is available");
             Ok(Device::new_cuda(0)?)
         } else if metal_is_available() {
             Ok(Device::new_metal(0)?)
