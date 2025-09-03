@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum LLMErrors {
+pub enum CandleWrapperErrors {
     #[error("failed to load plugin")]
     LoadPluginError,
     #[error("cannot read model config from env:")]

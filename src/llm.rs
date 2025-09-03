@@ -1,5 +1,4 @@
 pub mod config;
-pub mod error;
 
 use anyhow::Result;
 use candle_core::Tensor;
