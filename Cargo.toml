@@ -41,6 +41,9 @@ tokenizers = { workspace = true }
 #tokio = { workspace = true }
 tracing = { workspace = true }
 
+[dev-dependencies]
+tempfile = "3.12"
+
 [features]
 default = []
 accelerate = [

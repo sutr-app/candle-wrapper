@@ -3,6 +3,7 @@ use candle_transformers::models::llama;
 use candle_transformers::models::llama::Llama3RopeConfig;
 use candle_transformers::models::llama::LlamaEosToks;
 use candle_transformers::models::mistral;
+use candle_transformers::models::qwen3;
 use candle_transformers::models::stable_lm;
 use serde::Deserialize;
 use serde::Serialize;
@@ -17,6 +18,7 @@ pub enum ModelType {
     Llama,
     Mistral,
     StableLM,
+    Qwen3,
 }
 
 // use for deserializing config.json
@@ -51,6 +53,10 @@ pub struct LLMConfig {
     pub vocab_size: usize,                      // llama, falcon, stable_lm, mistral
 
     pub sliding_window: Option<usize>, // mistral
+    pub head_dim: Option<usize>,       // qwen3 - explicit head dimension
+    pub attention_bias: Option<bool>,  // qwen3
+    pub max_window_layers: Option<usize>, // qwen3
+    pub use_sliding_window: Option<bool>, // qwen3
 
     pub use_flash_attn: Option<bool>, // for candle (not include in config.json)
 
@@ -70,6 +76,7 @@ impl LLMConfig {
             "LlamaForCausalLM" => Some(ModelType::Llama),
             "MistralForCausalLM" => Some(ModelType::Mistral),
             "StableLMEpochForCausalLM" => Some(ModelType::StableLM),
+            "Qwen3ForCausalLM" => Some(ModelType::Qwen3),
             _ => {
                 tracing::error!("unknown model type: {:?}", &self.architectures);
                 None
@@ -180,6 +187,66 @@ impl From<LLMConfig> for stable_lm::Config {
         default
     }
 }
+
+impl From<LLMConfig> for qwen3::Config {
+    fn from(config: LLMConfig) -> qwen3::Config {
+        use candle_nn::Activation;
+        
+        tracing::debug!("load qwen3 model params: {:?}", &config);
+        
+        // candle-transformersのqwen3::Configに変換（全てconfig.jsonから読み取り）
+        qwen3::Config {
+            vocab_size: config.vocab_size,
+            hidden_size: config.hidden_size,
+            intermediate_size: config.intermediate_size.ok_or_else(|| {
+                anyhow::anyhow!("intermediate_size is required for Qwen3")
+            }).unwrap(),
+            num_hidden_layers: config.num_hidden_layers,
+            num_attention_heads: config.num_attention_heads,
+            head_dim: config.head_dim.ok_or_else(|| {
+                anyhow::anyhow!("head_dim is required for Qwen3")
+            }).unwrap(),
+            attention_bias: config.attention_bias.ok_or_else(|| {
+                anyhow::anyhow!("attention_bias is required for Qwen3")
+            }).unwrap(),
+            num_key_value_heads: config.num_key_value_heads.ok_or_else(|| {
+                anyhow::anyhow!("num_key_value_heads is required for Qwen3")
+            }).unwrap(),
+            max_position_embeddings: config.max_position_embeddings.ok_or_else(|| {
+                anyhow::anyhow!("max_position_embeddings is required for Qwen3")
+            }).unwrap(),
+            sliding_window: config.sliding_window,
+            max_window_layers: config.max_window_layers.ok_or_else(|| {
+                anyhow::anyhow!("max_window_layers is required for Qwen3")
+            }).unwrap(),
+            tie_word_embeddings: config.tie_word_embeddings.ok_or_else(|| {
+                anyhow::anyhow!("tie_word_embeddings is required for Qwen3")
+            }).unwrap(),
+            rope_theta: config.rope_theta as f64,
+            rms_norm_eps: config.rms_norm_eps.ok_or_else(|| {
+                anyhow::anyhow!("rms_norm_eps is required for Qwen3")
+            }).unwrap(),
+            use_sliding_window: config.use_sliding_window.ok_or_else(|| {
+                anyhow::anyhow!("use_sliding_window is required for Qwen3")
+            }).unwrap(),
+            hidden_act: config.hidden_act
+                .as_deref()
+                .map(|s| match s {
+                    "silu" | "swish" => Activation::Silu,
+                    "gelu" => Activation::Gelu,
+                    "relu" => Activation::Relu,
+                    _ => {
+                        tracing::warn!("Unknown activation function '{}', using Silu as fallback", s);
+                        Activation::Silu
+                    }
+                })
+                .unwrap_or_else(|| {
+                    tracing::error!("hidden_act is required for Qwen3");
+                    panic!("hidden_act is required for Qwen3")
+                }),
+        }
+    }
+}
 // for deserialized stable_lm::Config to LLMConfigWrapper
 impl From<stable_lm::Config> for LLMConfigWrapper {
     fn from(value: stable_lm::Config) -> Self {
@@ -194,6 +261,7 @@ pub enum LLMConfigWrapper {
     Llama(llama::Config),
     Mistral(mistral::Config),
     StableLM(stable_lm::Config),
+    Qwen3(qwen3::Config),
     // QStableLM(quantized_stable_lm::Config),
 }
 impl Clone for LLMConfigWrapper {
@@ -222,6 +290,7 @@ impl Clone for LLMConfigWrapper {
             Self::Llama(v) => Self::Llama(v.clone()),
             Self::Mistral(v) => Self::Mistral(v.clone()),
             Self::StableLM(v) => Self::StableLM(v.clone()),
+            Self::Qwen3(v) => Self::Qwen3(v.clone()),
         }
     }
 
@@ -255,6 +324,9 @@ impl Clone for LLMConfigWrapper {
             (Self::StableLM(dest), Self::StableLM(src)) => {
                 *dest = src.clone();
             }
+            (Self::Qwen3(dest), Self::Qwen3(src)) => {
+                *dest = src.clone();
+            }
             (_, _) => panic!("model type mismatch"),
         }
     }
@@ -267,6 +339,7 @@ impl From<LLMConfig> for LLMConfigWrapper {
             Some(ModelType::Llama) => Self::Llama(value.into()),
             Some(ModelType::Mistral) => Self::Mistral(value.into()),
             Some(ModelType::StableLM) => Self::StableLM(value.into()),
+            Some(ModelType::Qwen3) => Self::Qwen3(value.into()),
             None => {
                 tracing::error!("unknown model type: {:?}", &value.architectures);
                 unreachable!()
