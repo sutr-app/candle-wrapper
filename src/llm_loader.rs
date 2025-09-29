@@ -351,8 +351,8 @@ impl LLMLoaderImpl {
             ConfigWrapper::LLM(llm_config) => {
                 match llm_config {
                     LLMConfigWrapper::Qwen3(qwen3_config) => {
-                        tracing::info!("Loading Qwen3 SafeTensors model");
-                        let model = qwen3::Model::new(qwen3_config, vb)?;
+                        tracing::info!("Loading Qwen3 SafeTensors model with LM head");
+                        let model = qwen3::ModelForCausalLM::new(qwen3_config, vb)?;
                         let wrapper = LLMModelWrapper::Qwen3(model);
                         Ok((ModelWrapper::LLM(wrapper), device))
                     },

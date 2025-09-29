@@ -41,7 +41,7 @@ mod tests {
         let wrapper: LLMConfigWrapper = llm_config.into();
         match wrapper {
             LLMConfigWrapper::Qwen3(_) => {
-                println!("✅ Qwen3 config wrapper created successfully");
+                // Success case - no debug output needed
             }
             _ => panic!("Expected Qwen3 config wrapper"),
         }
