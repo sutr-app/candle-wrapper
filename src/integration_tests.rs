@@ -1,14 +1,11 @@
 #[cfg(test)]
 mod integration_tests {
-    use super::*;
-    use crate::llm::config::{LLMConfig, LLMConfigWrapper, ModelType};
+    use crate::llm::config::{LLMConfigWrapper, ModelType};
     use crate::llm::LLMModelWrapper;
     use crate::llm_loader::LLMLoaderImpl;
     use crate::loader::HFModelLoader;
-    use crate::models::{ConfigWrapper, HFModelSetting, ModelWrapper, Models};
-    use candle_core::{Device, Tensor};
-    use candle_nn;
-    use std::collections::HashMap;
+    use crate::models::{ConfigWrapper, HFModelSetting, ModelWrapper};
+    use candle_core::Tensor;
 
     /// Test actual Qwen3 SafeTensors model loading from Hugging Face
     /// Uses a small Qwen3 model for testing

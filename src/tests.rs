@@ -25,10 +25,10 @@ mod tests {
         });
 
         let llm_config: LLMConfig = serde_json::from_value(config_json).unwrap();
-        
+
         // Test model type detection
         assert_eq!(llm_config.model_type(), Some(ModelType::Qwen3));
-        
+
         // Test conversion to qwen3::Config
         let qwen3_config: candle_transformers::models::qwen3::Config = llm_config.clone().into();
         assert_eq!(qwen3_config.vocab_size, 151936);
@@ -36,7 +36,7 @@ mod tests {
         assert_eq!(qwen3_config.num_hidden_layers, 28);
         assert_eq!(qwen3_config.head_dim, 3584 / 28); // 128
         assert!(!qwen3_config.attention_bias);
-        
+
         // Test conversion to LLMConfigWrapper
         let wrapper: LLMConfigWrapper = llm_config.into();
         match wrapper {
@@ -46,5 +46,4 @@ mod tests {
             _ => panic!("Expected Qwen3 config wrapper"),
         }
     }
-
 }

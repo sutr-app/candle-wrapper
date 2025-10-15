@@ -12,17 +12,17 @@ pub enum CandleWrapperErrors {
     ModelNotFound,
     #[error("failed to run")]
     RunError,
-    
+
     // High-level abstraction errors
     #[error("Model operation failed: {0}")]
     ModelError(String),
-    
+
     #[error("File operation failed: {0}")]
     FileError(String),
-    
+
     #[error("Device operation failed: {0}")]
     DeviceError(String),
-    
+
     // Lower level error wrapping
     #[error("Candle core error: {0}")]
     CandleCoreError(#[from] candle_core::Error),
@@ -40,11 +40,11 @@ impl CandleWrapperErrors {
     pub fn model_error<T: std::fmt::Display>(msg: T) -> Self {
         Self::ModelError(msg.to_string())
     }
-    
+
     pub fn file_error<T: std::fmt::Display>(msg: T) -> Self {
         Self::FileError(msg.to_string())
     }
-    
+
     pub fn device_error<T: std::fmt::Display>(msg: T) -> Self {
         Self::DeviceError(msg.to_string())
     }

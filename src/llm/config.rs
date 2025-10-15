@@ -52,9 +52,9 @@ pub struct LLMConfig {
     pub use_cache: Option<bool>,                // falcon, stable_lm
     pub vocab_size: usize,                      // llama, falcon, stable_lm, mistral
 
-    pub sliding_window: Option<usize>, // mistral
-    pub head_dim: Option<usize>,       // qwen3 - explicit head dimension
-    pub attention_bias: Option<bool>,  // qwen3
+    pub sliding_window: Option<usize>,    // mistral
+    pub head_dim: Option<usize>,          // qwen3 - explicit head dimension
+    pub attention_bias: Option<bool>,     // qwen3
     pub max_window_layers: Option<usize>, // qwen3
     pub use_sliding_window: Option<bool>, // qwen3
 
@@ -191,52 +191,80 @@ impl From<LLMConfig> for stable_lm::Config {
 impl From<LLMConfig> for qwen3::Config {
     fn from(config: LLMConfig) -> qwen3::Config {
         use candle_nn::Activation;
-        
+
         tracing::debug!("load qwen3 model params: {:?}", &config);
-        
+
         // candle-transformersのqwen3::Configに変換（全てconfig.jsonから読み取り）
+        tracing::info!(
+            "Converting Qwen3 config: hidden_size={}, num_attention_heads={}, head_dim={:?}",
+            config.hidden_size,
+            config.num_attention_heads,
+            config.head_dim
+        );
+
         qwen3::Config {
             vocab_size: config.vocab_size,
             hidden_size: config.hidden_size,
-            intermediate_size: config.intermediate_size.ok_or_else(|| {
-                anyhow::anyhow!("intermediate_size is required for Qwen3")
-            }).unwrap(),
+            intermediate_size: config
+                .intermediate_size
+                .ok_or_else(|| anyhow::anyhow!("intermediate_size is required for Qwen3"))
+                .unwrap(),
             num_hidden_layers: config.num_hidden_layers,
             num_attention_heads: config.num_attention_heads,
-            head_dim: config.head_dim.ok_or_else(|| {
-                anyhow::anyhow!("head_dim is required for Qwen3")
-            }).unwrap(),
-            attention_bias: config.attention_bias.ok_or_else(|| {
-                anyhow::anyhow!("attention_bias is required for Qwen3")
-            }).unwrap(),
-            num_key_value_heads: config.num_key_value_heads.ok_or_else(|| {
-                anyhow::anyhow!("num_key_value_heads is required for Qwen3")
-            }).unwrap(),
-            max_position_embeddings: config.max_position_embeddings.ok_or_else(|| {
-                anyhow::anyhow!("max_position_embeddings is required for Qwen3")
-            }).unwrap(),
+            // XXX ERROR!
+            // head_dim: config
+            //     .head_dim
+            //     .ok_or_else(|| anyhow::anyhow!("head_dim is required for Qwen3"))
+            //     .unwrap(),
+            head_dim: config.hidden_size / config.num_attention_heads,
+            // XXX ERROR!
+            // attention_bias: config
+            //     .attention_bias
+            //     .ok_or_else(|| anyhow::anyhow!("attention_bias is required for Qwen3"))
+            //     .unwrap(),
+            attention_bias: false,
+            num_key_value_heads: config
+                .num_key_value_heads
+                .ok_or_else(|| anyhow::anyhow!("num_key_value_heads is required for Qwen3"))
+                .unwrap(),
+            max_position_embeddings: config
+                .max_position_embeddings
+                .ok_or_else(|| anyhow::anyhow!("max_position_embeddings is required for Qwen3"))
+                .unwrap(),
             sliding_window: config.sliding_window,
-            max_window_layers: config.max_window_layers.ok_or_else(|| {
-                anyhow::anyhow!("max_window_layers is required for Qwen3")
-            }).unwrap(),
-            tie_word_embeddings: config.tie_word_embeddings.ok_or_else(|| {
-                anyhow::anyhow!("tie_word_embeddings is required for Qwen3")
-            }).unwrap(),
+            // XXX ERROR!
+            // max_window_layers: config
+            //     .max_window_layers
+            //     .ok_or_else(|| anyhow::anyhow!("max_window_layers is required for Qwen3"))
+            //     .unwrap(),
+            max_window_layers: 0,
+            tie_word_embeddings: config
+                .tie_word_embeddings
+                .ok_or_else(|| anyhow::anyhow!("tie_word_embeddings is required for Qwen3"))
+                .unwrap(),
             rope_theta: config.rope_theta as f64,
-            rms_norm_eps: config.rms_norm_eps.ok_or_else(|| {
-                anyhow::anyhow!("rms_norm_eps is required for Qwen3")
-            }).unwrap(),
-            use_sliding_window: config.use_sliding_window.ok_or_else(|| {
-                anyhow::anyhow!("use_sliding_window is required for Qwen3")
-            }).unwrap(),
-            hidden_act: config.hidden_act
+            rms_norm_eps: config
+                .rms_norm_eps
+                .ok_or_else(|| anyhow::anyhow!("rms_norm_eps is required for Qwen3"))
+                .unwrap(),
+            // XXX ERROR!
+            // use_sliding_window: config
+            //     .use_sliding_window
+            //     .ok_or_else(|| anyhow::anyhow!("use_sliding_window is required for Qwen3"))
+            //     .unwrap(),
+            use_sliding_window: false,
+            hidden_act: config
+                .hidden_act
                 .as_deref()
                 .map(|s| match s {
                     "silu" | "swish" => Activation::Silu,
                     "gelu" => Activation::Gelu,
                     "relu" => Activation::Relu,
                     _ => {
-                        tracing::warn!("Unknown activation function '{}', using Silu as fallback", s);
+                        tracing::warn!(
+                            "Unknown activation function '{}', using Silu as fallback",
+                            s
+                        );
                         Activation::Silu
                     }
                 })
