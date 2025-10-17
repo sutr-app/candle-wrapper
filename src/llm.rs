@@ -154,8 +154,7 @@ impl LLMModelWrapper {
             return Err(anyhow::anyhow!(
                 "Expected 3D logits tensor [batch, seq, vocab], got {:?}",
                 dims
-            )
-            .into());
+            ));
         }
 
         let (_batch_size, seq_len, vocab_size) = (dims[0], dims[1], dims[2]);
@@ -166,16 +165,14 @@ impl LLMModelWrapper {
                 "yes_token_id {} out of vocabulary bounds {}",
                 yes_token_id,
                 vocab_size
-            )
-            .into());
+            ));
         }
         if no_token_id as usize >= vocab_size {
             return Err(anyhow::anyhow!(
                 "no_token_id {} out of vocabulary bounds {}",
                 no_token_id,
                 vocab_size
-            )
-            .into());
+            ));
         }
 
         // Extract last token's logits
@@ -214,8 +211,7 @@ impl LLMModelWrapper {
             return Err(anyhow::anyhow!(
                 "Expected 3D logits tensor [batch, seq, vocab], got {:?}",
                 dims
-            )
-            .into());
+            ));
         }
 
         let (batch_size, seq_len, vocab_size) = (dims[0], dims[1], dims[2]);
@@ -226,16 +222,14 @@ impl LLMModelWrapper {
                 "yes_token_id {} out of vocabulary bounds {}",
                 yes_token_id,
                 vocab_size
-            )
-            .into());
+            ));
         }
         if no_token_id as usize >= vocab_size {
             return Err(anyhow::anyhow!(
                 "no_token_id {} out of vocabulary bounds {}",
                 no_token_id,
                 vocab_size
-            )
-            .into());
+            ));
         }
 
         let mut scores = Vec::with_capacity(batch_size);

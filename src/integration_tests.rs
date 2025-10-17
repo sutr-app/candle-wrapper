@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod integration_tests {
+mod model_integration_tests {
     use crate::llm::config::{LLMConfigWrapper, ModelType};
     use crate::llm::LLMModelWrapper;
     use crate::llm_loader::LLMLoaderImpl;
@@ -407,7 +407,7 @@ mod integration_tests {
                     println!("   Model type: {}", llm_model.model_type());
 
                     // Test basic tokenization with embedding-focused text
-                    let test_texts = vec![
+                    let test_texts = [
                         "Machine learning enables intelligent data analysis.",
                         "Natural language understanding requires semantic embeddings.",
                     ];
@@ -432,7 +432,7 @@ mod integration_tests {
                         );
 
                         // Create input tensor for testing
-                        if token_ids.len() > 0 && token_ids.len() <= 256 {
+                        if !token_ids.is_empty() && token_ids.len() <= 256 {
                             let token_batch = vec![token_ids.to_vec()];
                             match Tensor::new(token_batch, &models.device) {
                                 Ok(input_tensor) => {
@@ -499,10 +499,10 @@ mod integration_tests {
                     println!("   Model type: {}", llm_model.model_type());
 
                     // Test basic tokenization with embedding-focused text
-                    let test_texts = vec![
+                    let test_texts = [
                         "This is a document about machine learning and artificial intelligence.",
                         "Natural language processing enables computers to understand human language.",
-                        "Vector embeddings capture semantic meaning in high-dimensional space."
+                        "Vector embeddings capture semantic meaning in high-dimensional space.",
                     ];
 
                     for (i, test_text) in test_texts.iter().enumerate() {
@@ -521,7 +521,7 @@ mod integration_tests {
                         println!("      Tokens: {} tokens", token_ids.len());
 
                         // Create input tensor with batch dimension [1, seq_len]
-                        if token_ids.len() > 0 && token_ids.len() <= 512 {
+                        if !token_ids.is_empty() && token_ids.len() <= 512 {
                             // Reasonable size for testing
                             let token_batch = vec![token_ids.to_vec()];
                             match Tensor::new(token_batch, &models.device) {
@@ -550,7 +550,9 @@ mod integration_tests {
             }
             Err(e) => {
                 println!("❌ Qwen3-Embedding-8B model loading failed: {}", e);
-
+                println!("   This may be expected due to:");
+                println!("   - Model architecture incompatibility");
+                println!("   - Network issues or large model size");
                 assert!(false);
                 Ok(())
             }
@@ -631,7 +633,7 @@ mod integration_tests {
                                 println!(
                                     "   📝 Testing tokenization with multi-file SafeTensors model"
                                 );
-                                let test_texts = vec![
+                                let test_texts = [
                                     "Hello, how are you today?",
                                     "Machine learning is fascinating.",
                                 ];

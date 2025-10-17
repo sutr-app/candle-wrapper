@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod test_llm_config {
     use crate::llm::config::{LLMConfig, LLMConfigWrapper, ModelType};
     use serde_json::json;
 
