@@ -45,4 +45,12 @@ impl WhisperWrapper {
             Self::QWhisper(m) => m.decoder.final_linear(x),
         }
     }
+
+    #[inline]
+    pub fn reset_kv_cache(&mut self) {
+        match self {
+            Self::Whisper(m) => m.reset_kv_cache(),
+            Self::QWhisper(m) => m.reset_kv_cache(),
+        }
+    }
 }
