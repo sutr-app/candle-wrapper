@@ -46,6 +46,28 @@ impl WhisperWrapper {
         }
     }
 
+    /// Decoder forward pass that also returns cross-attention weights from specified layers.
+    /// Only supported for non-quantized models; returns an error for QWhisper.
+    #[inline]
+    pub fn decoder_forward_with_cross_attn(
+        &mut self,
+        x: &Tensor,
+        xa: &Tensor,
+        flush: bool,
+        alignment_layer_indices: &[usize],
+    ) -> candle_core::Result<(Tensor, Vec<(usize, Tensor)>)> {
+        match self {
+            Self::Whisper(m) => {
+                m.decoder
+                    .forward_with_cross_attn(x, xa, flush, alignment_layer_indices)
+            }
+            Self::QWhisper(_) => Err(candle_core::Error::Msg(
+                "cross-attention weights extraction is not supported for quantized models"
+                    .to_string(),
+            )),
+        }
+    }
+
     #[inline]
     pub fn reset_kv_cache(&mut self) {
         match self {
