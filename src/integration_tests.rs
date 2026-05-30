@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod model_integration_tests {
-    use crate::llm::config::{LLMConfigWrapper, ModelType};
     use crate::llm::LLMModelWrapper;
+    use crate::llm::config::{LLMConfigWrapper, ModelType};
     use crate::llm_loader::LLMLoaderImpl;
     use crate::loader::HFModelLoader;
     use crate::models::{ConfigWrapper, HFModelSetting, ModelWrapper};
@@ -193,7 +193,9 @@ mod model_integration_tests {
                 Err(e) => {
                     println!("   ❌ {} model failed: {}", format, e);
                     // Don't fail the test for network/availability issues, just report
-                    println!("      This may be expected if model is not available or network issues occur");
+                    println!(
+                        "      This may be expected if model is not available or network issues occur"
+                    );
                 }
             }
         }
@@ -664,10 +666,14 @@ mod model_integration_tests {
                                         &models.device,
                                     )?;
                                     println!("      Input tensor: {:?}", input_ids.shape());
-                                    println!("      ✅ Multi-file SafeTensors tensor creation successful");
+                                    println!(
+                                        "      ✅ Multi-file SafeTensors tensor creation successful"
+                                    );
                                 }
 
-                                println!("✅ Qwen3-8B multi-file SafeTensors test completed successfully");
+                                println!(
+                                    "✅ Qwen3-8B multi-file SafeTensors test completed successfully"
+                                );
                             }
                             _ => {
                                 println!("   ⚠️  Unexpected model wrapper type for Qwen3");
@@ -688,7 +694,9 @@ mod model_integration_tests {
 
                 // Don't fail the test for resource/network issues, but log the problem
                 if e.to_string().contains("404") || e.to_string().contains("network") {
-                    println!("   📝 Note: This appears to be a network/resource issue, not a code problem");
+                    println!(
+                        "   📝 Note: This appears to be a network/resource issue, not a code problem"
+                    );
                     Ok(())
                 } else {
                     println!("   📝 Note: This might be a multi-file SafeTensors loading issue");

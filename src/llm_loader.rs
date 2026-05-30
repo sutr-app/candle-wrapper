@@ -1,12 +1,12 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use candle_core::quantized::gguf_file;
 use candle_core::{DType, Device};
 use candle_nn::VarBuilder;
 use candle_transformers::models::{quantized_qwen3, qwen3};
 use std::path::{Path, PathBuf};
 
-use crate::llm::config::{LLMConfig, LLMConfigWrapper, ModelType};
 use crate::llm::LLMModelWrapper;
+use crate::llm::config::{LLMConfig, LLMConfigWrapper, ModelType};
 use crate::loader::HFModelLoader;
 use crate::models::{ConfigWrapper, ModelWrapper};
 
@@ -84,7 +84,7 @@ impl HFModelLoader for LLMLoaderImpl {
         setting: crate::models::HFModelSetting,
     ) -> Result<crate::models::Models> {
         use crate::models::{
-            Models, MODEL_CONFIG_FILE, TOKENIZER_FILE, WEIGHT_FILES_SAFETENSOR_SINGLE,
+            MODEL_CONFIG_FILE, Models, TOKENIZER_FILE, WEIGHT_FILES_SAFETENSOR_SINGLE,
         };
         use tokenizers::Tokenizer;
 
@@ -303,12 +303,11 @@ impl LLMLoaderImpl {
                         tracing::info!("Successfully loaded single SafeTensors file");
                         Ok(vec![single_file])
                     }
-                    Err(single_err) => {
-                        Err(anyhow!(
-                            "Failed to load SafeTensors: neither index.json ({}) nor single file ({}) found", 
-                            index_err, single_err
-                        ))
-                    }
+                    Err(single_err) => Err(anyhow!(
+                        "Failed to load SafeTensors: neither index.json ({}) nor single file ({}) found",
+                        index_err,
+                        single_err
+                    )),
                 }
             }
         }

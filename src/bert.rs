@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use candle_core::Tensor;
 use candle_transformers::models::bert::BertModel;
 use debug_stub_derive::DebugStub;

@@ -1,7 +1,7 @@
 use anyhow::Result;
-use candle_core::utils::{cuda_is_available, metal_is_available};
 use candle_core::Device;
-use hf_hub::{api::sync::Api, Repo, RepoType};
+use candle_core::utils::{cuda_is_available, metal_is_available};
+use hf_hub::{Repo, RepoType, api::sync::Api};
 use std::path::{Path, PathBuf};
 use tokenizers::Tokenizer;
 
