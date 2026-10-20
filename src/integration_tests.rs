@@ -550,14 +550,7 @@ mod model_integration_tests {
                 println!("✅ Qwen3-Embedding-8B test completed successfully");
                 Ok(())
             }
-            Err(e) => {
-                println!("❌ Qwen3-Embedding-8B model loading failed: {}", e);
-                println!("   This may be expected due to:");
-                println!("   - Model architecture incompatibility");
-                println!("   - Network issues or large model size");
-                assert!(false);
-                Ok(())
-            }
+            Err(e) => Err(e.context("Qwen3-Embedding-8B model loading failed")),
         }
     }
 

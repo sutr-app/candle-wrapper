@@ -160,7 +160,7 @@ impl HFModelLoader for LLMLoaderImpl {
 
             // Use tokenizer from same model (standard case)
             Tokenizer::from_file(&tf)
-                .map_err(|e| anyhow::anyhow!("error in load tokenizer {:?}: {:?}", &tf, e))?
+                .map_err(|e| anyhow::anyhow!("error in load tokenizer {:?}: {:?}", tf, e))?
         };
 
         // Load weight files and handle config differently for GGUF vs SafeTensors

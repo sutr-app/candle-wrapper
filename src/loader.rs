@@ -129,9 +129,9 @@ pub trait HFModelLoader {
         model_filename: &Path,
         weight_filenames: &[PathBuf],
     ) -> Result<Models> {
-        tracing::debug!("load tokenizer: {:?}", &tokenizer_filename);
+        tracing::debug!("load tokenizer: {:?}", tokenizer_filename);
         let tokenizer = Tokenizer::from_file(tokenizer_filename).map_err(|e| {
-            anyhow::anyhow!("error in load tokenizer {:?}: {:?}", &tokenizer_filename, e)
+            anyhow::anyhow!("error in load tokenizer {:?}: {:?}", tokenizer_filename, e)
         })?;
 
         // path got from repository
